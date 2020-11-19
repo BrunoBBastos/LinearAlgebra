@@ -1,28 +1,20 @@
 let A, B;
-let matrixA = [[0, 0, 2, 3],
-			   [0, 3, 1, 0],
-			   [0, 1, 0, 0]];
+let matrixA = [[ 1, 2, -1, -4],
+  		       [ 2, 3, -1,-11],
+ 			   [-2, 0, -3, 22]];
 
 let matrixB = [[4, 3, 0],
 			   [1, 3, 2],
 			   [0, -1, 0]];
 
-			   //[[3],
-			   //[-2]];
 
-
-//[[2, -4],
-	//		   [4, 3],
-	//		   [-2, 9]]
-
-let doonce = true;
+let doonce = true; // flag pra parar o código
 
 function setup() {
  createCanvas(500, 500);
 
 A = new Matrix(matrixA);
 B = new Matrix(matrixB);
-I = new Matrix(idMatrix);
 }
 
 function draw() {
@@ -31,11 +23,10 @@ function draw() {
   A.drawMatrix(0);
   B.drawMatrix(width / 2);
   if(doonce){
-  	
   	let result = [];
   	result = A.echelonForm();
-  	doonce = false;
   	console.table(result.elements);
+  	doonce = false;
   }
 }
 
@@ -172,28 +163,65 @@ class Matrix{
 		return aTransp;
 	}
 
+	// echelonForm(){
+	// 	let M = [...this.elements]; // clonning is caring
+	// 	let echelon = 0;
+	// 	// encontrar pivô
+	// 	for(let j = 0; j < this.c; j++){
+	// 		for(let i = 0 + echelon; i < this.r; i++){
+	// 			if(M[i][j] != 0){
+	// 				//verificar se está no topo da matriz
+	// 				if(i != echelon){
+	// 					swapRows(M, echelon, i);
+	// 					echelon++;
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+
+	// 	let result = new Matrix(M);
+	// 	return result;
+	// }
+
 	echelonForm(){
-		let M = this.elements;
-		let echelon = 0;
-		// encontrar pivô
-		let breakpoint = false
-		for(let j = 0; j < this.c; j++){
-			for(let i = 0 + echelon; i < this.r; i++){
-				if(M[i][j] != 0){
-					//verificar se está no topo da matriz
-					if(i != echelon){
-						swapRows(M, echelon, i);
-						echelon++;
-						// breakpoint = true;
-						// break;
-					}
-				}
-			}
-			if(breakpoint) break;
-		}
-		let result = new Matrix(M);
-		return result;
-	}
+		let M = [...this.elements]; // clone
+		let lead = 0; //lead := 0
+
+    //rowCount := the number of rows in M
+    //columnCount := the number of columns in M
+    	for(let i = 0; i < this.r; i++){ //for 0 ≤ r < rowCount do
+    		console.table(M);
+
+    		if(this.c <= lead) return; //if columnCount ≤ lead then stop
+    		let r = i; //i = r
+
+    		while(M[r][lead] == 0){ //while M[i, lead] = 0 do
+    			r++; //i = i + 1
+
+    			if(this.r == r){ // if rowCount = i then
+    				r = i; // i = r
+    				lead++; // lead = lead + 1
+
+    				if(this.c == lead) return; //if columnCount = lead then stop
+    			}
+    		}
+    		swapRows(M, r, i); //  Swap rows i and r
+
+    		if(M[i][lead] != 0){ //If M[r, lead] is not 0
+    			multiplyRow(M[i], 1/M[i][lead]); // divide row r by M[r, lead]
+    		}	
+
+    		for(let h = 0; h < this.r; h++){ //for 0 ≤ i < rowCount do
+    			if(h == i) continue;
+    			let val = M[r][lead];
+    			addRows(M[r], M[i], 1, -val);  			
+    		}
+    		lead++; //lead = lead + 1
+    	}
+    	let result = new Matrix(M);
+    	return result;
+    }
+      
 }
 
 function swapCols(M, c1, c2){
@@ -203,13 +231,45 @@ function swapCols(M, c1, c2){
 function swapRows(M, r1, r2){
 	let rowAux = [];
 	rowAux = M[r1];
-	console.log(M);
 	M[r1] = M[r2];
 	M[r2] = rowAux;
 }
 
-let I;
-let idMatrix = [[1, 0, 0],
-				[0, 1, 0],
-				[0, 0, 1]];
+function multiplyRow(V, scalar){
+	for(let i = 0; i < V.length; i++){
+		V[i] *= scalar;
+	}
+}
 
+function addRows(V, R, scalarV, scalarR){
+	for(let i = 0; i < V.length; i++){
+		V[i] = V[i] * scalarV + R[i] * scalarR;
+	}
+}
+
+function createRandomMatrix(n, m, minV, maxV){
+	let M = [];
+	for(let i = 0; i < n; i++){
+		let row = [];
+		for(let j = 0; j < m; j++){
+			row.push(round(random() * (maxV - minV) + minV));
+		}
+		M.push(row);
+	}
+	let result = new Matrix(M);
+	return result;
+}
+
+function createIdentityMatrix(n){
+	let M = [];
+	for(let i = 0; i < n; i++){
+		let row = [];
+		for(let j = 0; j < n; j++){
+			if(i == j) row.push(1);
+			else row.push(0);
+		}
+		M.push(row);
+	}
+	let result = new Matrix(M);
+	return result;
+}
