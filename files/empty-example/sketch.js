@@ -3,9 +3,9 @@ let matrixA = [[ 1, 2, -1, -4],
   		       [ 2, 3, -1,-11],
  			   [-2, 0, -3, 22]];
 
-let matrixB = [[4, 3, 0],
-			   [1, 3, 2],
-			   [0, -1, 0]];
+let matrixB = [[2, 2, 0],
+			   [2, -1, 0],
+			   [0, 0, 2]];
 
 
 let doonce = true; // flag pra parar o código
@@ -25,7 +25,7 @@ function draw() {
   if(doonce){
   	let result = [];
   	result = A.echelonForm();
-  	console.table(result.elements);
+  	console.table(result.mtx);
   	doonce = false;
   }
 }
@@ -34,14 +34,14 @@ function draw() {
 
 class Matrix{
 	constructor(m){
-		let elements = []; // precisa ser iniciado como array antes de receber um array
-		this.elements = m;
-		this.c = this.elements[0].length;
-		this.r = this.elements.length;
+		let mtx = []; // precisa ser iniciado como array antes de receber um array
+		this.mtx = m;
+		this.c = this.mtx[0].length;
+		this.r = this.mtx.length;
 		
 		this.isSquare = (this.c == this.r);
 		if(this.isSquare){
-			this.det = this.determinant(this.elements);
+			this.det = this.determinant(this.mtx);
 			this.tr = this.trace();
 		}
 	}
@@ -51,7 +51,7 @@ class Matrix{
 		let margin = 40;
 		for(let i = 0; i < this.r; i++){
 			for( let j = 0; j < this.c; j++){
-				text(this.elements[i][j], cellSize * (j) + x + margin, cellSize * (i) + margin);
+				text(this.mtx[i][j], cellSize * (j) + x + margin, cellSize * (i) + margin);
 			}
 		}
 		if(!this.isSquare) return;
@@ -70,7 +70,7 @@ class Matrix{
 			for(let j = 0; j < m.c; j++){
 				let sum = 0;
 				for(let a = 0; a < this.c; a++){
-					sum += this.elements[i][a] * m.elements[a][j];
+					sum += this.mtx[i][a] * m.mtx[a][j];
 				}
 				result[i][j] = sum;
 			}
@@ -79,7 +79,7 @@ class Matrix{
 		return productM;
 	}
 
-	determinant(m){ // recebe elements
+	determinant(m){ // recebe mtx
 		let det = 0;
 		if(m.length <= 2){
 			// let det = 0;
@@ -114,7 +114,7 @@ class Matrix{
 	trace(){
 		let sum = 0;
 		for(let i = 0; i < this.r; i++){
-			sum += this.elements[i][i];
+			sum += this.mtx[i][i];
 		}
 		return sum;
 	}
@@ -124,7 +124,7 @@ class Matrix{
 		for(let i = 0; i < this.r; i++){
 			let row =[];
 			for(let j = 0; j < this.c; j++){
-				row.push(this.elements[i][j] * a);
+				row.push(this.mtx[i][j] * a);
 			}
 			result.push(row);
 		}
@@ -142,7 +142,7 @@ class Matrix{
 		for(let i = 0; i < this.r; i++){
 			let row = [];
 			for(let j = 0; j < this.c; j++){
-				row[j] = this.elements[i][j] + M.elements[i][j];
+				row[j] = this.mtx[i][j] + M.mtx[i][j];
 			}
 			result.push(row);
 		}
@@ -155,7 +155,7 @@ class Matrix{
 		for(let i = 0; i < this.r; i++){
 			let col = [];
 			for(let j = 0; j < this.c; j++){
-				col[j] = this.elements[j][i];
+				col[j] = this.mtx[j][i];
 			}
 			result.push(col);
 		}
@@ -163,62 +163,43 @@ class Matrix{
 		return aTransp;
 	}
 
-	// echelonForm(){
-	// 	let M = [...this.elements]; // clonning is caring
-	// 	let echelon = 0;
-	// 	// encontrar pivô
-	// 	for(let j = 0; j < this.c; j++){
-	// 		for(let i = 0 + echelon; i < this.r; i++){
-	// 			if(M[i][j] != 0){
-	// 				//verificar se está no topo da matriz
-	// 				if(i != echelon){
-	// 					swapRows(M, echelon, i);
-	// 					echelon++;
-	// 				}
-	// 			}
-	// 		}
-	// 	}
+	augmentedForm(){
 
-	// 	let result = new Matrix(M);
-	// 	return result;
-	// }
+	}
 
 	echelonForm(){
-		let M = [...this.elements]; // clone
-		let lead = 0; //lead := 0
+		let M = [];
+		M = copyMatrix(this); // clonar é amar
+		let lead = 0; // índice de navegação horizontal
 
-    //rowCount := the number of rows in M
-    //columnCount := the number of columns in M
-    	for(let i = 0; i < this.r; i++){ //for 0 ≤ r < rowCount do
-    		console.table(M);
+    	for(let i = 0; i < this.r; i++){ //organizar linhas por escala
+    		if(this.c <= lead) return; // sair se o índice horizontal for além das colunas
+    		let r = i; // índice de navegação vertical
 
-    		if(this.c <= lead) return; //if columnCount ≤ lead then stop
-    		let r = i; //i = r
+    		while(M[r][lead] == 0){ // Procurar um pivot...
+    			r++; // ...verticalmente,
 
-    		while(M[r][lead] == 0){ //while M[i, lead] = 0 do
-    			r++; //i = i + 1
+    			if(this.r == r){ // se o índice vertical for além das linhas...
+    				r = i; // ...voltar para a linha inicial...
+    				lead++; // ...e procurar na próxima coluna
 
-    			if(this.r == r){ // if rowCount = i then
-    				r = i; // i = r
-    				lead++; // lead = lead + 1
-
-    				if(this.c == lead) return; //if columnCount = lead then stop
+    				if(this.c == lead) return; // sair se o índice horizontal for além das colunas
     			}
-    		}
-    		swapRows(M, r, i); //  Swap rows i and r
+    		} // Se chegou até aqui, foi encontrado um pivot
+    		swapRows(M, r, i); // troca a linha do pivot pela linha da escala atual
 
-    		if(M[i][lead] != 0){ //If M[r, lead] is not 0
-    			multiplyRow(M[i], 1/M[i][lead]); // divide row r by M[r, lead]
+    		if(M[i][lead] != 0){ // Apenas se o pivot não for zero...
+    			multiplyRow(M[i], 1/M[i][lead]); // divide a linha da escala atual pelo valor do seu pivot
     		}	
 
-    		for(let h = 0; h < this.r; h++){ //for 0 ≤ i < rowCount do
-    			if(h == i) continue;
-    			let val = M[r][lead];
-    			addRows(M[r], M[i], 1, -val);  			
-    		}
-    		lead++; //lead = lead + 1
+    		for(let h = 0; h < this.r; h++){ // Linha por linha...
+    			if(h == i) continue; // ...pulando a linha da escala atual...
+    			//let val = M[h][lead];
+    			addRows(M[h], M[i], 1, -M[h][lead]);  	// addRows(M[h], M[i], 1, -val); 		
+    		} // subtrai de cada linha da matriz o produto de seu pivot e da linha da escala atual
+    		lead++; // avança horizontalmente
     	}
-    	let result = new Matrix(M);
+    	let result = new Matrix(M); //produz uma matriz resultado do escalonamento
     	return result;
     }
       
@@ -271,5 +252,20 @@ function createIdentityMatrix(n){
 		M.push(row);
 	}
 	let result = new Matrix(M);
+	return result;
+}
+
+function copyMatrix(M){
+	console.table(M.mtx);
+	let rows = M.r;
+	let cols = M.c;
+	let result = [];
+	for(let i = 0; i < rows; i++){
+		let newR = [];
+		for(let j = 0; j < cols; j++){
+			newR[j] = M.mtx[i][j];
+		}
+		result.push(newR);
+	}
 	return result;
 }
